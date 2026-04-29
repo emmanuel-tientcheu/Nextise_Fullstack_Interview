@@ -22,6 +22,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+    console.log('Fonts variables:', {
+    geistSans: geistSans.variable,    // devrait être '--font-geist-sans'
+    geistMono: geistMono.variable,    // devrait être '--font-geist-mono'
+  });
   return (
     <html
       lang="en"
