@@ -15,12 +15,12 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String   
+  password  String
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions  Session[]
+  sessions Session[]
 
   @@map("users")
 }
@@ -33,4 +33,140 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+// ============================================
+// MODÈLE TRAINER (FORMATEUR)
+// ============================================
+
+model Trainer {
+  id         String  @id @default(uuid())
+  name       String  @db.Text
+  email      String  @unique
+  location   String  @db.Text
+  hourlyRate Float?  @default(0)
+  rating     Int?    @default(3)
+  experience String? @db.Text // Junior, Senior, Expert
+
+  // Tableaux
+  subjects String[] @db.Text // ["React.js", "Node.js", "TypeScript"]
+
+  // Disponibilités (JSON flexible)
+  availability  Json? // [{ start: Date, end: Date, reason: string }]
+  blackoutDates Json? // Dates indisponibles
+
+  // Relations
+  assignedCourses Course[] // Formations assignées
+  assignments     Assignment[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([location])
+  @@map("trainers")
+}
+
+model Course {
+  id           String       @id @default(uuid())
+  name         String       @db.Text
+  date         DateTime
+  subjects     String[]     @db.Text // ["React.js", "Next.js"]
+  location     String       @db.Text
+  participants Int          @default(1)
+  notes        String?      @db.Text
+  price        Float        @default(0)
+  trainerPrice Float        @default(0)
+  status       CourseStatus @default(DRAFT)
+
+  // Relations
+  assignedTrainerId String?
+  assignedTrainer   Trainer?      @relation(fields: [assignedTrainerId], references: [id])
+  assignments       Assignment[]
+  conflictLogs      ConflictLog[]
+  createdBy         String? // User ID qui a créé la formation
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+  @@index([status])
+  @@index([location])
+  @@map("courses")
+}
+
+// ============================================
+// MODÈLE ASSIGNMENT (HISTORIQUE DES AFFECTATIONS)
+// ============================================
+
+model Assignment {
+  id         String           @id @default(uuid())
+  courseId   String
+  course     Course           @relation(fields: [courseId], references: [id])
+  trainerId  String
+  trainer    Trainer          @relation(fields: [trainerId], references: [id])
+  assignedBy String? // User ID
+  assignedAt DateTime         @default(now())
+  status     AssignmentStatus @default(ACTIVE)
+  notes      String?          @db.Text
+
+  @@unique([courseId, trainerId, status])
+  @@index([assignedAt])
+  @@map("assignments")
+}
+
+// ============================================
+// MODÈLE CONFLICT LOG (POUR TRACER LES CONFLITS)
+// ============================================
+
+model ConflictLog {
+  id           String    @id @default(uuid())
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id])
+  conflictType String // 'trainer', 'location', 'resource'
+  severity     String // 'error', 'warning'
+  details      Json // Détails du conflit
+  resolved     Boolean   @default(false)
+  resolvedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([courseId])
+  @@map("conflict_logs")
+}
+
+// ============================================
+// MODÈLE EMAIL LOG (POUR TRACER LES EMAILS)
+// ============================================
+
+model EmailLog {
+  id       String   @id @default(uuid())
+  to       String
+  subject  String
+  template String
+  status   String // 'sent', 'failed'
+  error    String?  @db.Text
+  sentAt   DateTime @default(now())
+  courseId String?
+
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum CourseStatus {
+  DRAFT
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  REMOVED
+  COMPLETED
 }
