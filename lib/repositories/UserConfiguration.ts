@@ -4,8 +4,6 @@ import { InMemoryUserRepository } from "@/app/api/users/infrastructure/persistan
 
 const USE_IN_MEMORY = process.env.USE_IN_MEMORY_DB === 'true'
 
-console.log('📦 Env vars loaded')
-
 // Singleton - une seule instance du repository
 let userRepositoryInstance: IUserRepository | null = null
 
