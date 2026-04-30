@@ -1,15 +1,15 @@
-import bcrypt from 'bcryptjs'
 import { IUserRepository } from '../../../application/ports/IUserRepository'
 import { User } from '../../../domaine/models/User'
 import { CreateUserDTO } from '../../next/CreateUserDTO'
 import { UpdateUserDTO } from '../../next/UpdateUserDTO'
 import { prisma } from '@/lib/prisma'
-import { randomUUID } from 'crypto'
+import { serviceContainer } from '@/lib/ioc/ServiceContainer'
 
 export class PrismaUserRepository implements IUserRepository {
+    private passwordHasher = serviceContainer.passwordHashing
 
   async create(data: CreateUserDTO): Promise<User> {
-    const hashedPassword = await bcrypt.hash(data.password, 10)
+    const hashedPassword = await this.passwordHasher.hash(data.password)
 
     const prismaUser = await prisma.user.create({
       data: {
@@ -65,7 +65,7 @@ export class PrismaUserRepository implements IUserRepository {
     }
 
     if (data.password !== undefined) {
-      updateData.password = await bcrypt.hash(data.password, 10)
+      updateData.password = await this.passwordHasher.hash(data.password)
     }
 
     if (data.name !== undefined) {

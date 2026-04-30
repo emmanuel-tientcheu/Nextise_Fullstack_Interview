@@ -3,6 +3,7 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { serviceContainer } from "@/lib/ioc/ServiceContainer"
 
 const handler = NextAuth({
   providers: [
@@ -20,8 +21,9 @@ const handler = NextAuth({
         })
 
         if (!user || !user.password) return null
+        const passwordHasher = serviceContainer.passwordHashing
 
-        const isValid = await bcrypt.compare(
+        const isValid = await passwordHasher.compare(
           credentials.password as string,
           user.password
         )
