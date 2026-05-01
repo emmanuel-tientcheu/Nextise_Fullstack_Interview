@@ -1,5 +1,5 @@
-import { BcryptPasswordHasher } from "@/domain/adapters/BcryptPasswordHasher"
-import { IPasswordHasher } from "@/domain/ports/IPasswordHasher"
+import { BcryptPasswordHasher } from "@/services/adapters/BcryptPasswordHasher"
+import { IPasswordHasher } from "@/services/ports/IPasswordHasher"
 
 
 class ServiceContainer {
