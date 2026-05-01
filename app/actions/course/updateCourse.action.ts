@@ -3,7 +3,11 @@
 
 import { redirect } from "next/navigation"
 
-export async function updateCourseAction(formData: FormData) {
+// ✅ Ajouter le paramètre prevState pour useFormState
+export async function updateCourseAction(
+  prevState: { success: boolean; errors: { field: string; message: string }[] | null },
+  formData: FormData
+): Promise<{ success: boolean; errors: { field: string; message: string }[] | null }> {
   const id = formData.get("id") as string
   const name = formData.get("name") as string
   const dateStr = formData.get("date") as string
@@ -77,7 +81,7 @@ export async function updateCourseAction(formData: FormData) {
         price: price ? parseFloat(price) : undefined,
         trainerPrice: trainerPrice ? parseFloat(trainerPrice) : undefined,
         notes: notes || undefined,
-        assignedTrainerId: assignedTrainerId || undefined,
+        assignedTrainerId: assignedTrainerId === "none" ? undefined : assignedTrainerId,
         status: status || undefined,
       }),
     })
@@ -97,7 +101,7 @@ export async function updateCourseAction(formData: FormData) {
       }
     }
 
-    redirect("/dashboard/courses?success=Course updated successfully")
+    redirect(`/dashboard/courses/${id}?success=Course updated successfully`)
     
   } catch (error) {
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {

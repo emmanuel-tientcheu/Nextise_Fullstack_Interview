@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useActionState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useFormState } from "react-dom"
@@ -57,7 +57,7 @@ interface EditTrainerPageProps {
 
 export default function EditTrainerPage({ params }: EditTrainerPageProps) {
   const router = useRouter()
-  const [state, formAction, isPending] = useFormState(updateTrainerAction, initialState)
+  const [state, formAction, isPending] = useActionState(updateTrainerAction, initialState)
   const [isLoading, setIsLoading] = useState(true)
   const [trainerId, setTrainerId] = useState<string>("")
   
@@ -124,7 +124,7 @@ export default function EditTrainerPage({ params }: EditTrainerPageProps) {
 
   if (isLoading) {
     return (
-      <div className="container max-w-3xl mx-auto py-8 flex justify-center items-center min-h-[400px]">
+      <div className="container max-w-3xl mx-auto py-8 flex justify-center items-center min-h-100">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     )

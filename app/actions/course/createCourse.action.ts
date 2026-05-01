@@ -3,7 +3,10 @@
 
 import { redirect } from "next/navigation"
 
-export async function createCourseAction(formData: FormData) {
+export async function createCourseAction(
+  prevState: { success: boolean; errors: { field: string; message: string }[] | null },
+  formData: FormData
+): Promise<{ success: boolean; errors: { field: string; message: string }[] | null }> {
   // Extraire les données du formulaire
   const name = formData.get("name") as string
   const dateStr = formData.get("date") as string
@@ -93,6 +96,7 @@ export async function createCourseAction(formData: FormData) {
     }
 
     redirect("/dashboard/courses?success=Course created successfully")
+
     
   } catch (error) {
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {

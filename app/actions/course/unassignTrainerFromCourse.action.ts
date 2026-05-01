@@ -1,7 +1,7 @@
 // app/actions/course/unassignTrainerFromCourse.action.ts
 'use server'
 
-import { redirect } from "next/navigation"
+// import { redirect } from "next/navigation"
 
 export async function unassignTrainerFromCourseAction(formData: FormData) {
   const courseId = formData.get("courseId") as string
@@ -29,7 +29,8 @@ export async function unassignTrainerFromCourseAction(formData: FormData) {
       }
     }
 
-    redirect(`/dashboard/courses/${courseId}?success=Trainer unassigned successfully`)
+    // redirect(`/dashboard/courses/${courseId}?success=Trainer unassigned successfully`)
+    return { success: true }
     
   } catch (error) {
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {

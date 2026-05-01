@@ -1,7 +1,7 @@
 // app/actions/course/assignTrainerToCourse.action.ts
 'use server'
 
-import { redirect } from "next/navigation"
+// import { redirect } from "next/navigation"
 
 export async function assignTrainerToCourseAction(formData: FormData) {
   const courseId = formData.get("courseId") as string
@@ -45,7 +45,9 @@ export async function assignTrainerToCourseAction(formData: FormData) {
       }
     }
 
-    redirect(`/dashboard/courses/${courseId}?success=Trainer assigned successfully`)
+    // redirect(`/dashboard/courses/${courseId}?success=Trainer assigned successfully`)
+    return { success: true }
+
     
   } catch (error) {
     if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
