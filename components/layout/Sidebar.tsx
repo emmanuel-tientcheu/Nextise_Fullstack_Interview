@@ -21,10 +21,10 @@ import { signOut } from "next-auth/react"
 
 const menuItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/courses", icon: BookOpen, label: "Courses" },
-  { href: "/trainers", icon: Users, label: "Trainers" },
-  { href: "/assignments", icon: CalendarCheck, label: "Assignments" },
-  { href: "/profile", icon: UserCircle, label: "Profile" },
+  { href: "/dashboard/courses", icon: BookOpen, label: "Courses" },
+  { href: "/dashboard/trainers", icon: Users, label: "Trainers" },
+  { href: "/dashboard/assignments", icon: CalendarCheck, label: "Assignments" },
+  { href: "/dashboard/profile", icon: UserCircle, label: "Profile" },
 ]
 
 interface SidebarProps {

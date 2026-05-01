@@ -1,3 +1,4 @@
+// components/layout/NavItem.tsx
 'use client'
 
 import Link from "next/link"
@@ -13,7 +14,9 @@ interface NavItemProps {
 
 export function NavItem({ href, icon: Icon, label, collapsed }: NavItemProps) {
   const pathname = usePathname()
-  const isActive = pathname === href || pathname?.startsWith(`${href}/`)
+  
+  const isActive = pathname === href || 
+    (href !== '/dashboard' && pathname?.startsWith(`${href}/`))
 
   return (
     <Link
