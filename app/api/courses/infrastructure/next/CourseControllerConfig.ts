@@ -11,16 +11,20 @@ import { GetCourseByIdUseCase } from "../../applications/useCases/GetCourseByIdU
 import { GetAllCoursesUseCase } from "../../applications/useCases/GetAllCoursesUseCase"
 import { AssignTrainerUseCase } from "../../applications/useCases/AssignTrainerUseCase"
 import { UnassignTrainerUseCase } from "../../applications/useCases/UnassignTrainerUseCase"
+import { IEmailSender } from "@/services/ports/IEmailSender"
+import { getEmailSender } from "@/lib/ioc/EmailContainer"
 
 class CourseContainer {
   private static instance: CourseContainer
   private courseRepository: ICourseRepository
   private trainerRepository: ITrainerRepository
   private courseController: CourseController | null = null
+  private emailSender: IEmailSender
 
   private constructor() {
     this.courseRepository = getCourseRepository()
     this.trainerRepository = getTrainerRepository()
+    this.emailSender = getEmailSender()
   }
 
   static getInstance(): CourseContainer {
@@ -32,7 +36,11 @@ class CourseContainer {
 
   // Use Cases
   private getCreateCourseUseCase(): CreateCourseUseCase {
-    return new CreateCourseUseCase(this.courseRepository)
+    return new CreateCourseUseCase(
+      this.courseRepository,
+      this.trainerRepository,
+      this.emailSender
+    )
   }
 
   private getUpdateCourseUseCase(): UpdateCourseUseCase {
@@ -53,7 +61,7 @@ class CourseContainer {
 
   // Assign/Unassign Use Cases (nécessitent trainerRepository)
   private getAssignTrainerUseCase(): AssignTrainerUseCase {
-    return new AssignTrainerUseCase(this.courseRepository, this.trainerRepository)
+    return new AssignTrainerUseCase(this.courseRepository, this.trainerRepository, this.emailSender )
   }
 
   private getUnassignTrainerUseCase(): UnassignTrainerUseCase {

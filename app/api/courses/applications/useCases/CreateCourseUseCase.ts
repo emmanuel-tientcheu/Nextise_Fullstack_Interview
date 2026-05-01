@@ -3,9 +3,16 @@ import { CourseMapper } from "../../infrastructure/persistance/prisma/CourseMapp
 import { CourseResponseDTO } from "../../domaine/viewModels/CourseResponseDTO"
 import { CreateCourseDTO } from "../../infrastructure/next/CreateCourseDTO"
 import { ICourseRepository } from "../ports/ICourseRepository"
+import { ITrainerRepository } from "@/app/api/trainers/application/ports/ITrainerRepository"
+import { IEmailSender } from "@/services/ports/IEmailSender"
+import { AssignmentEmailData, EmailResult } from "@/lib/email/types"
 
 export class CreateCourseUseCase {
-  constructor(private courseRepository: ICourseRepository) {}
+  constructor(
+    private courseRepository: ICourseRepository,
+    private trainerRepository: ITrainerRepository,
+    private emailSender: IEmailSender
+  ) {}
 
   async execute(data: CreateCourseDTO): Promise<CourseResponseDTO> {
     // Validation des données
@@ -59,6 +66,7 @@ export class CreateCourseUseCase {
     }
 
     // Vérification des conflits de formateur si un formateur est assigné
+    let assignedTrainer = null
     if (data.assignedTrainerId) {
       const trainerConflicts = await this.courseRepository.findTrainerConflicts(
         data.assignedTrainerId,
@@ -74,10 +82,48 @@ export class CreateCourseUseCase {
           `Trainer conflict: The trainer is already assigned to another course on ${data.date.toLocaleDateString()}:\n${conflictMessages}`
         )
       }
+
+      // Récupérer les informations du formateur pour l'email
+      assignedTrainer = await this.trainerRepository.findById(data.assignedTrainerId)
     }
 
     // Créer la formation
     const course = await this.courseRepository.create(data)
+
+    // Envoyer un email si un formateur est assigné
+    if (assignedTrainer && course) {
+      try {
+        const emailData: AssignmentEmailData = {
+          course: {
+            courseId: course.id,
+            courseName: course.name,
+            courseDate: course.date,
+            courseLocation: course.location,
+            courseParticipants: course.participants,
+            courseNotes: course.notes,
+            coursePrice: course.price,
+            courseTrainerPrice: course.trainerPrice,
+          },
+          trainer: {
+            trainerId: assignedTrainer.id,
+            trainerName: assignedTrainer.name,
+            trainerEmail: assignedTrainer.email,
+          },
+          assignmentDate: new Date(),
+        }
+
+        const emailResult = await this.emailSender.sendAssignmentEmail(emailData)
+        
+        if (emailResult.success) {
+          console.log(`✅ Assignment email sent to ${assignedTrainer.email}`)
+        } else {
+          console.warn(`⚠️ Failed to send assignment email: ${emailResult.error}`)
+        }
+      } catch (emailError) {
+        // L'email ne bloque pas la création du cours
+        console.error('❌ Error sending assignment email:', emailError)
+      }
+    }
 
     return CourseMapper.toResponseDTO(course)
   }
