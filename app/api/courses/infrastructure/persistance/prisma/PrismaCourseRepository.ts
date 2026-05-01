@@ -29,7 +29,10 @@ export class PrismaCourseRepository implements ICourseRepository {
 
   async findById(id: string): Promise<Course | null> {
     const prismaCourse = await prisma.course.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        assignedTrainer: true, 
+      }
     })
 
     return prismaCourse ? CourseMapper.toDomain(prismaCourse) : null
@@ -79,7 +82,10 @@ export class PrismaCourseRepository implements ICourseRepository {
         take,
         orderBy: filters?.sortBy ? {
           [filters.sortBy]: filters.sortOrder || 'asc'
-        } : { date: 'asc' }
+        } : { date: 'asc' },
+        include: {
+          assignedTrainer: true,  
+        }
       }),
       prisma.course.count({ where })
     ])

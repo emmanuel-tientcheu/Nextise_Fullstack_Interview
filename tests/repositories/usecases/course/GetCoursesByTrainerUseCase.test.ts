@@ -15,7 +15,7 @@ describe('GetCoursesByTrainerUseCase', () => {
     // Create courses with same trainer
     await courseRepository.create({
       name: 'React Workshop',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -26,7 +26,7 @@ describe('GetCoursesByTrainerUseCase', () => {
 
     await courseRepository.create({
       name: 'Vue Workshop',
-      date: new Date('2025-07-20'),
+      date: new Date(),
       subjects: ['Vue'],
       location: 'Lyon',
       participants: 8,
@@ -38,7 +38,7 @@ describe('GetCoursesByTrainerUseCase', () => {
     // Create a course with different trainer
     await courseRepository.create({
       name: 'Angular Workshop',
-      date: new Date('2025-08-10'),
+      date: new Date(),
       subjects: ['Angular'],
       location: 'Marseille',
       participants: 12,

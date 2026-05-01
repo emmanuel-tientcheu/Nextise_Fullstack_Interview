@@ -28,7 +28,7 @@ describe('AssignTrainerUseCase', () => {
     // Create a course
     const course = await courseRepository.create({
       name: 'React Workshop',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -56,7 +56,7 @@ describe('AssignTrainerUseCase', () => {
   it('should throw error when trainer not found', async () => {
     const course = await courseRepository.create({
       name: 'React Workshop',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -80,7 +80,7 @@ describe('AssignTrainerUseCase', () => {
     // Create first course with trainer assigned
     await courseRepository.create({
       name: 'First Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -92,7 +92,7 @@ describe('AssignTrainerUseCase', () => {
     // Create second course on same date
     const secondCourse = await courseRepository.create({
       name: 'Second Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['Vue'],
       location: 'Lyon',
       participants: 8,
@@ -114,10 +114,10 @@ describe('AssignTrainerUseCase', () => {
       subjects: ['React'],
     })
 
-    // Create first course on June 15
+    // Create first course
     await courseRepository.create({
       name: 'First Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -126,10 +126,12 @@ describe('AssignTrainerUseCase', () => {
       assignedTrainerId: trainer.id,
     })
 
-    // Create second course on June 20 (different date)
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    // Create second course
     const secondCourse = await courseRepository.create({
       name: 'Second Course',
-      date: new Date('2025-06-20'),
+      date: new Date(tomorrow),
       subjects: ['Vue'],
       location: 'Lyon',
       participants: 8,

@@ -17,7 +17,7 @@ describe('UnassignTrainerUseCase', () => {
     // Create a course with assigned trainer
     const course = await courseRepository.create({
       name: 'React Workshop',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -40,7 +40,7 @@ describe('UnassignTrainerUseCase', () => {
     // Create a course without trainer
     const course = await courseRepository.create({
       name: 'React Workshop',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,

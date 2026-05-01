@@ -37,7 +37,7 @@ describe('CreateCourseUseCase', () => {
 
     it('should throw error when name is missing', async () => {
         const data = {
-            date: new Date('2025-06-15'),
+            date: new Date(),
             subjects: ['React'],
             location: 'Paris',
             participants: 10,
@@ -64,7 +64,7 @@ describe('CreateCourseUseCase', () => {
     it('should throw error when location is missing', async () => {
         const data = {
             name: 'React Workshop',
-            date: new Date('2025-06-15'),
+            date: new Date(),
             subjects: ['React'],
             participants: 10,
             price: 2500,
@@ -77,7 +77,7 @@ describe('CreateCourseUseCase', () => {
     it('should throw error when participants is less than 1', async () => {
         const data = {
             name: 'React Workshop',
-            date: new Date('2025-06-15'),
+            date: new Date(),
             subjects: ['React'],
             location: 'Paris',
             participants: 0,

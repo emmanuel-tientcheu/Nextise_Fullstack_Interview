@@ -1,3 +1,5 @@
+import { TrainerInfo } from "@/app/api/trainers/domaine/viewModels/TrainerInfo"
+
 // DTO pour la réponse (ce qu'on renvoie au client)
 export interface CourseResponseDTO {
   id: string
@@ -11,6 +13,7 @@ export interface CourseResponseDTO {
   trainerPrice: number
   status: 'DRAFT' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
   assignedTrainerId: string | null
+  assignedTrainer?: TrainerInfo
   createdAt: Date
   updatedAt: Date
 }

@@ -2,9 +2,12 @@
 import { CourseResponseDTO } from '../../../domaine/viewModels/CourseResponseDTO'
 import { UpdateCourseDTO } from '../../next/UpdateCourseDTO'
 import { CreateCourseDTO } from '../../next/CreateCourseDTO'
-import type { Course as PrismaCourse} from '@/lib/generated/prisma/client'
+import type { Course as PrismaCourse, Trainer as PrismaTrainer } from '@/lib/generated/prisma/client'
 import { Course } from '../../../domaine/models/Course'
 
+type PrismaCourseWithTrainer = PrismaCourse & {
+  assignedTrainer?: PrismaTrainer | null
+}
 
 export class CourseMapper {
   /**
@@ -51,8 +54,9 @@ export class CourseMapper {
 
   /**
    * Convertir un Course Prisma → DTO de réponse (direct)
+   * Utilise le type étendu pour inclure le trainer
    */
-  static fromPrismaToResponseDTO(prismaCourse: PrismaCourse): CourseResponseDTO {
+  static fromPrismaToResponseDTO(prismaCourse: PrismaCourseWithTrainer): CourseResponseDTO {
     return {
       id: prismaCourse.id,
       name: prismaCourse.name,
@@ -65,6 +69,11 @@ export class CourseMapper {
       trainerPrice: prismaCourse.trainerPrice,
       status: prismaCourse.status as 'DRAFT' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED',
       assignedTrainerId: prismaCourse.assignedTrainerId,
+      assignedTrainer: prismaCourse.assignedTrainer ? {
+        id: prismaCourse.assignedTrainer.id,
+        name: prismaCourse.assignedTrainer.name,
+        email: prismaCourse.assignedTrainer.email,
+      } : undefined,
       createdAt: prismaCourse.createdAt,
       updatedAt: prismaCourse.updatedAt,
     }
@@ -90,11 +99,10 @@ export class CourseMapper {
 
   /**
    * Convertir un DTO de mise à jour → données pour Prisma
-   * (Seuls les champs présents sont inclus)
    */
   static toPrismaUpdate(data: UpdateCourseDTO) {
     const updateData: any = {}
-    
+
     if (data.name !== undefined) updateData.name = data.name
     if (data.date !== undefined) updateData.date = data.date
     if (data.subjects !== undefined) updateData.subjects = data.subjects
@@ -105,7 +113,7 @@ export class CourseMapper {
     if (data.trainerPrice !== undefined) updateData.trainerPrice = data.trainerPrice
     if (data.assignedTrainerId !== undefined) updateData.assignedTrainerId = data.assignedTrainerId
     if (data.status !== undefined) updateData.status = data.status
-    
+
     return updateData
   }
 }

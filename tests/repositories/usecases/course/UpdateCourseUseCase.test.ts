@@ -17,7 +17,7 @@ describe('UpdateCourseUseCase', () => {
     // Create a course first
     const created = await courseRepository.create({
       name: 'Original Name',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -44,7 +44,7 @@ describe('UpdateCourseUseCase', () => {
     // Create first course
     await courseRepository.create({
       name: 'First Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 5,
@@ -55,7 +55,7 @@ describe('UpdateCourseUseCase', () => {
     // Create second course
     const secondCourse = await courseRepository.create({
       name: 'Second Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['Vue'],
       location: 'Lyon',
       participants: 8,
@@ -71,7 +71,7 @@ describe('UpdateCourseUseCase', () => {
   it('should allow update when location conflict is on same course', async () => {
     const course = await courseRepository.create({
       name: 'My Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
@@ -87,7 +87,7 @@ describe('UpdateCourseUseCase', () => {
   it('should throw error when participants is less than 1', async () => {
     const course = await courseRepository.create({
       name: 'My Course',
-      date: new Date('2025-06-15'),
+      date: new Date(),
       subjects: ['React'],
       location: 'Paris',
       participants: 10,
