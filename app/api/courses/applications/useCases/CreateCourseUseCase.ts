@@ -1,3 +1,4 @@
+// application/usecases/course/CreateCourseUseCase.ts
 import { CourseMapper } from "../../infrastructure/persistance/prisma/CourseMapper"
 import { CourseResponseDTO } from "../../domaine/viewModels/CourseResponseDTO"
 import { CreateCourseDTO } from "../../infrastructure/next/CreateCourseDTO"
@@ -39,6 +40,40 @@ export class CreateCourseUseCase {
     // Vérifier que la date n'est pas dans le passé (sauf pour les brouillons)
     if (data.status !== 'DRAFT' && data.date < new Date()) {
       throw new Error('Course date cannot be in the past')
+    }
+
+    // Vérification des conflits de lieu
+    const locationConflicts = await this.courseRepository.findLocationConflicts(
+      data.location,
+      data.date
+    )
+
+    if (locationConflicts.length > 0) {
+      const conflictMessages = locationConflicts.map(conflict => 
+        `- ${conflict.name} on ${conflict.date.toLocaleDateString()}`
+      ).join('\n')
+      
+      throw new Error(
+        `Location conflict: The location "${data.location}" is already booked on ${data.date.toLocaleDateString()} for the following course(s):\n${conflictMessages}`
+      )
+    }
+
+    // Vérification des conflits de formateur si un formateur est assigné
+    if (data.assignedTrainerId) {
+      const trainerConflicts = await this.courseRepository.findTrainerConflicts(
+        data.assignedTrainerId,
+        data.date
+      )
+
+      if (trainerConflicts.length > 0) {
+        const conflictMessages = trainerConflicts.map(conflict => 
+          `- ${conflict.name} on ${conflict.date.toLocaleDateString()}`
+        ).join('\n')
+        
+        throw new Error(
+          `Trainer conflict: The trainer is already assigned to another course on ${data.date.toLocaleDateString()}:\n${conflictMessages}`
+        )
+      }
     }
 
     // Créer la formation
