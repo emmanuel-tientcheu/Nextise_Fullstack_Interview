@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { getTrainerByIdAction } from "@/app/actions/trainer/getTrainerById.action"
 import { deleteTrainerAction } from "@/app/actions/trainer/deleteTrainer.action"
+import { getAllCoursesAction } from "@/app/actions/course/getAllCourses.action"
+import { getAllTrainersAction } from "@/app/actions/trainer/getAllTrainers.action"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,6 +22,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
   ArrowLeft,
   Pencil,
   Trash2,
@@ -30,7 +40,10 @@ import {
   Briefcase,
   BookOpen,
   Loader2,
+  Calendar,
 } from "lucide-react"
+import type { TrainerResponseDTO } from "@/app/api/trainers/domaine/viewModels/TrainerResponseDTO"
+import type { CourseResponseDTO } from "@/app/api/courses/domaine/viewModels/CourseResponseDTO"
 
 interface TrainerShowPageProps {
   params: Promise<{ id: string }>
@@ -49,39 +62,99 @@ interface TrainerData {
   updatedAt: Date
 }
 
+interface CourseData {
+  id: string
+  name: string
+  date: Date
+  subjects: string[]
+  location: string
+  participants: number
+  price: number
+  status: 'DRAFT' | 'SCHEDULED' | 'COMPLETED' | 'CANCELLED'
+  assignedTrainerId: string | null
+  assignedTrainerName?: string
+}
+
+const statusColors: Record<string, string> = {
+  DRAFT: "bg-gray-100 text-gray-700",
+  SCHEDULED: "bg-blue-100 text-blue-700",
+  COMPLETED: "bg-green-100 text-green-700",
+  CANCELLED: "bg-red-100 text-red-700",
+}
+
+const statusLabels: Record<string, string> = {
+  DRAFT: "Draft",
+  SCHEDULED: "Scheduled",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
+}
+
 export default function TrainerShowPage({ params }: TrainerShowPageProps) {
   const router = useRouter()
   const [trainer, setTrainer] = useState<TrainerData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [courses, setCourses] = useState<CourseData[]>([])
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoadingCourses, setIsLoadingCourses] = useState<boolean>(true)
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Charger les données du trainer
+  // Charger les données du trainer et ses cours
   useEffect(() => {
-    const loadTrainer = async () => {
+    const loadData = async (): Promise<void> => {
       const { id } = await params
-      const result = await getTrainerByIdAction(id)
-
-      if (result.success && result.trainer) {
-        setTrainer(result.trainer)
+      
+      // Charger le trainer
+      const trainerResult = await getTrainerByIdAction(id)
+      if (trainerResult.success && trainerResult.trainer) {
+        setTrainer(trainerResult.trainer as TrainerData)
       } else {
         router.push("/dashboard/trainers?error=Trainer not found")
+        setIsLoading(false)
+        return
       }
 
+      // Charger les cours associés à ce trainer
+      const coursesResult = await getAllCoursesAction({ assignedTrainerId: id })
+      if (coursesResult.success && coursesResult.courses) {
+        // Récupérer les noms des formateurs
+        const trainersResult = await getAllTrainersAction()
+        const trainerMap = new Map<string, string>()
+        if (trainersResult.success && trainersResult.trainers) {
+          trainersResult.trainers.forEach((t: TrainerResponseDTO) => {
+            trainerMap.set(t.id, t.name)
+          })
+        }
+
+        const formattedCourses: CourseData[] = coursesResult.courses.map((course: CourseResponseDTO) => ({
+          id: course.id,
+          name: course.name,
+          date: course.date instanceof Date ? course.date : new Date(course.date),
+          subjects: course.subjects,
+          location: course.location,
+          participants: course.participants,
+          price: course.price,
+          status: course.status,
+          assignedTrainerId: course.assignedTrainerId,
+          assignedTrainerName: course.assignedTrainerId ? trainerMap.get(course.assignedTrainerId) : undefined,
+        }))
+        setCourses(formattedCourses)
+      }
+      setIsLoadingCourses(false)
       setIsLoading(false)
     }
 
-    loadTrainer()
+    loadData()
   }, [params, router])
 
-  // ✅ Version simplifiée : appel direct de l'action
-  const handleDelete = async () => {
+  const handleDelete = async (): Promise<void> => {
+    if (!trainer) return
+    
     setIsDeleting(true)
     setError(null)
     
     const formData = new FormData()
-    formData.append("id", trainer!.id)
+    formData.append("id", trainer.id)
     
     const result = await deleteTrainerAction(formData)
     
@@ -97,7 +170,7 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
 
   if (isLoading) {
     return (
-      <div className="container max-w-4xl mx-auto py-8 flex justify-center items-center min-h-100">
+      <div className="container max-w-6xl mx-auto py-8 flex justify-center items-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
       </div>
     )
@@ -108,7 +181,7 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-8">
+    <div className="container max-w-6xl mx-auto py-8">
       {/* Header avec actions */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -146,9 +219,8 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
         </div>
       )}
 
-      {/* Grille d'informations (identique) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* ... reste du contenu identique ... */}
+      {/* Grille d'informations du trainer */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Personal Information</CardTitle>
@@ -192,7 +264,7 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
               <div>
                 <p className="text-sm text-gray-500">Subjects</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {trainer.subjects.map((subject) => (
+                  {trainer.subjects.map((subject: string) => (
                     <Badge key={subject} variant="secondary">
                       {subject}
                     </Badge>
@@ -231,7 +303,7 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
                   </span>
                   {trainer.rating && (
                     <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
+                      {[...Array(5)].map((_, i: number) => (
                         <Star
                           key={i}
                           className={`h-4 w-4 ${
@@ -278,6 +350,86 @@ export default function TrainerShowPage({ params }: TrainerShowPageProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Section des cours associés */}
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Associated Courses
+          </CardTitle>
+          <CardDescription>
+            Courses assigned to {trainer.name}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingCourses ? (
+            <div className="flex justify-center items-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              No courses assigned to this trainer yet.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Course Name</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Subjects</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Participants</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {courses.map((course: CourseData) => (
+                    <TableRow key={course.id}>
+                      <TableCell className="font-medium">
+                        {course.name}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(course.date).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {course.subjects.slice(0, 2).map((subject: string) => (
+                            <Badge key={subject} variant="secondary" className="text-xs">
+                              {subject}
+                            </Badge>
+                          ))}
+                          {course.subjects.length > 2 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{course.subjects.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{course.location}</TableCell>
+                      <TableCell>{course.participants}</TableCell>
+                      <TableCell>
+                        <Badge className={statusColors[course.status]}>
+                          {statusLabels[course.status]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/dashboard/courses/${course.id}`}>
+                          <Button variant="ghost" size="sm">
+                            View
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Alert Dialog pour la suppression */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
