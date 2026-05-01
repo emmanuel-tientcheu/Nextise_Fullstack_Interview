@@ -2,6 +2,8 @@
 import { CreateCourseUseCase } from '@/app/api/courses/applications/useCases/CreateCourseUseCase'
 import { InMemoryCourseRepository } from '@/app/api/courses/infrastructure/persistance/ram/InMemoryCourseRepository'
 import { InMemoryTrainerRepository } from '@/app/api/trainers/infrastructure/persistance/ram/InMemoryTrainerRepository'
+import { MockEmailSender } from '@/services/adapters/MockEmailSender'
+import { IEmailSender } from '@/services/ports/IEmailSender'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 
@@ -9,11 +11,14 @@ describe('CreateCourseUseCase', () => {
     let createCourseUseCase: CreateCourseUseCase
     let courseRepository: InMemoryCourseRepository
     let trainerRepository: InMemoryTrainerRepository
+    let emailSender: IEmailSender
+
 
     beforeEach(() => {
         courseRepository = new InMemoryCourseRepository()
         trainerRepository = new InMemoryTrainerRepository()
-        createCourseUseCase = new CreateCourseUseCase(courseRepository)
+        emailSender = new MockEmailSender()
+        createCourseUseCase = new CreateCourseUseCase(courseRepository, trainerRepository, emailSender)
     })
 
     it('should create a course with valid data', async () => {

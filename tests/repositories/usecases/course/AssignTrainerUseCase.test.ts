@@ -2,6 +2,8 @@
 import { AssignTrainerUseCase } from '@/app/api/courses/applications/useCases/AssignTrainerUseCase'
 import { InMemoryCourseRepository } from '@/app/api/courses/infrastructure/persistance/ram/InMemoryCourseRepository'
 import { InMemoryTrainerRepository } from '@/app/api/trainers/infrastructure/persistance/ram/InMemoryTrainerRepository'
+import { MockEmailSender } from '@/services/adapters/MockEmailSender'
+import { IEmailSender } from '@/services/ports/IEmailSender'
 import { describe, it, expect, beforeEach } from 'vitest'
 
 
@@ -9,11 +11,13 @@ describe('AssignTrainerUseCase', () => {
   let assignTrainerUseCase: AssignTrainerUseCase
   let courseRepository: InMemoryCourseRepository
   let trainerRepository: InMemoryTrainerRepository
+  let emailSender: IEmailSender
 
   beforeEach(() => {
     courseRepository = new InMemoryCourseRepository()
     trainerRepository = new InMemoryTrainerRepository()
-    assignTrainerUseCase = new AssignTrainerUseCase(courseRepository, trainerRepository)
+    emailSender = new MockEmailSender()
+    assignTrainerUseCase = new AssignTrainerUseCase(courseRepository, trainerRepository, emailSender)
   })
 
   it('should assign a trainer to a course', async () => {

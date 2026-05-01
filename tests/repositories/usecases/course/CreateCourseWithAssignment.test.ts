@@ -4,18 +4,23 @@ import { CreateCourseUseCase } from '@/app/api/courses/applications/useCases/Cre
 import { AssignTrainerUseCase } from '@/app/api/courses/applications/useCases/AssignTrainerUseCase'
 import { InMemoryCourseRepository } from '@/app/api/courses/infrastructure/persistance/ram/InMemoryCourseRepository'
 import { InMemoryTrainerRepository } from '@/app/api/trainers/infrastructure/persistance/ram/InMemoryTrainerRepository'
+import { IEmailSender } from '@/services/ports/IEmailSender'
+import { MockEmailSender } from '@/services/adapters/MockEmailSender'
 
 describe('CreateCourseWithAssignment', () => {
   let createCourseUseCase: CreateCourseUseCase
   let assignTrainerUseCase: AssignTrainerUseCase
   let courseRepository: InMemoryCourseRepository
   let trainerRepository: InMemoryTrainerRepository
+  let emailSender: IEmailSender
+
 
   beforeEach(() => {
     courseRepository = new InMemoryCourseRepository()
     trainerRepository = new InMemoryTrainerRepository()
-    createCourseUseCase = new CreateCourseUseCase(courseRepository)
-    assignTrainerUseCase = new AssignTrainerUseCase(courseRepository, trainerRepository)
+    emailSender = new MockEmailSender()
+    createCourseUseCase = new CreateCourseUseCase(courseRepository, trainerRepository, emailSender)
+    assignTrainerUseCase = new AssignTrainerUseCase(courseRepository, trainerRepository, emailSender)
   })
 
   it('should create a course and assign a trainer to it', async () => {
