@@ -66,7 +66,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <p className="text-xs leading-none text-gray-400">{session?.user?.email}</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator className="bg-gray-800" />
+            {/* <DropdownMenuSeparator className="bg-gray-800" />
             <DropdownMenuItem onClick={() => router.push("/profile")} className="cursor-pointer">
               <User className="mr-2 h-4 w-4" />
               Profile
@@ -75,7 +75,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
-            <DropdownMenuSeparator className="bg-gray-800" />
+            <DropdownMenuSeparator className="bg-gray-800" /> */}
             <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/auth/login" })} className="cursor-pointer text-red-400">
               <LogOut className="mr-2 h-4 w-4" />
               Logout

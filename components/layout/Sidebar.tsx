@@ -17,14 +17,14 @@ import {
 import { NavItem } from "./NavItem"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { signOut } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 
 const menuItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/dashboard/courses", icon: BookOpen, label: "Courses" },
   { href: "/dashboard/trainers", icon: Users, label: "Trainers" },
-  { href: "/dashboard/assignments", icon: CalendarCheck, label: "Assignments" },
-  { href: "/dashboard/profile", icon: UserCircle, label: "Profile" },
+  // { href: "/dashboard/assignments", icon: CalendarCheck, label: "Assignments" },
+  // { href: "/dashboard/profile", icon: UserCircle, label: "Profile" },
 ]
 
 interface SidebarProps {
@@ -34,6 +34,8 @@ interface SidebarProps {
 
 export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
+  const { data: session } = useSession()
+
   const pathname = usePathname()
 
   const toggleCollapse = () => {
@@ -83,20 +85,20 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
         <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-gray-700 text-white text-sm">
-              U
+              {session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase() || "U"}
             </AvatarFallback>
           </Avatar>
           {!collapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">User</p>
-              <p className="text-xs text-gray-400 truncate">user@example.com</p>
+              <p className="text-sm font-medium text-white truncate">{session?.user?.name || "User"}</p>
+              <p className="text-xs text-gray-400 truncate">{session?.user?.email}</p>
             </div>
           )}
           {!collapsed && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/auth/login" })}
               className="text-gray-400 hover:text-white"
             >
               <LogOut className="h-4 w-4" />
@@ -108,7 +110,7 @@ export function Sidebar({ isMobileOpen = false, onMobileClose }: SidebarProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => signOut({ callbackUrl: "/login" })}
+              onClick={() => signOut({ callbackUrl: "/auth/login" })}
               className="text-gray-400 hover:text-white"
               title="Logout"
             >
